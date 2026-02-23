@@ -1,0 +1,71 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pybackup"
+version = "1.0.0"
+description = "CLI-based backup engine for files and databases (MongoDB, PostgreSQL, MySQL, MSSQL)"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+
+authors = [
+    { name = "Selvaraj Iyyappan" }
+]
+
+keywords = [
+    "backup",
+    "cli",
+    "devops",
+    "database",
+    "mongodb",
+    "postgresql",
+    "mysql",
+    "mssql",
+    "linux",
+    "cron"
+]
+
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Intended Audience :: System Administrators",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: System :: Archiving :: Backup",
+    "Topic :: System :: Systems Administration"
+]
+
+dependencies = [
+    "click>=8.1",
+    "PyYAML>=6.0"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4",
+    "pytest-cov",
+    "black",
+    "ruff"
+]
+
+[project.scripts]
+pybackup = "pybackup.cli:main"
+
+[tool.setuptools]
+packages = ["pybackup"]
+
+[tool.setuptools.package-data]
+pybackup = ["config/*.yaml"]
+
+[tool.black]
+line-length = 88
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

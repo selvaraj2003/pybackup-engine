@@ -1,0 +1,81 @@
+# =========================
+# Python cache / compiled
+# =========================
+__pycache__/
+*.py[cod]
+*$py.class
+
+# =========================
+# Virtual environments
+# =========================
+venv/
+.venv/
+env/
+ENV/
+
+# =========================
+# Build / packaging
+# =========================
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# =========================
+# Logs
+# =========================
+*.log
+logs/
+var/log/
+
+# =========================
+# OS / Editor files
+# =========================
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# =========================
+# Test artifacts
+# =========================
+.pytest_cache/
+.coverage
+htmlcov/
+
+# =========================
+# Environment & secrets
+# =========================
+.env
+*.env
+secrets.yaml
+secrets.yml
+
+# =========================
+# Backup / archive files
+# =========================
+*.tar
+*.tar.gz
+*.zip
+*.bz2
+*.xz
+
+# =========================
+# Runtime data (pybackup)
+# =========================
+/var/lib/pybackup/
+runtime/
+tmp/
+
+# =========================
+# YAML user configs (optional)
+# =========================
+pybackup.yaml
+pybackup.local.yaml
+
+# =========================
+# Systemd generated files
+# =========================
+*.service
