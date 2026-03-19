@@ -21,9 +21,6 @@ Sections:
 
 Run with pytest:
     pytest tests/test_all.py -v
-
-Run without pytest (plain python):
-    python tests/test_all.py
 """
 
 from __future__ import annotations
@@ -63,13 +60,25 @@ def _proc_ok(**kw):
 
 
 def _make_yaml(tmp_path: Path, **overrides) -> Path:
+    """
+    Build a minimal valid YAML config.
+
+    Pass global={"key": "val"} to merge extra keys into the [global] section.
+    All other kwargs become top-level engine sections.
+
+    Example:
+        _make_yaml(tmp_path,
+                   global={"db_path": str(tmp_path / "test.db")},
+                   files={"enabled": True, "jobs": [...]})
+    """
     cfg = {
         "version": 1,
         "global": {
-            "backup_root": str(tmp_path / "backups"),
+            "backup_root":    str(tmp_path / "backups"),
             "retention_days": 7,
-            "compress": False,
-            "log_level": "WARNING",
+            "compress":       False,
+            "log_level":      "WARNING",
+            "db_path":        str(tmp_path / "pybackup.db"),   # always safe path
             **overrides.pop("global", {}),
         },
         **overrides,
@@ -1047,13 +1056,13 @@ class TestRouter:
 
     def test_exact_and_param_same_prefix(self):
         r = self._router()
-        fn_list = lambda req, db: (200, {}, b"list")
+        fn_list   = lambda req, db: (200, {}, b"list")
         fn_detail = lambda req, db: (200, {}, b"detail")
-        r.add("GET", "/api/runs", fn_list)
+        r.add("GET", "/api/runs",     fn_list)
         r.add("GET", "/api/runs/:id", fn_detail)
-        matched_list, _ = r.match("GET", "/api/runs")
-        matched_detail, p = r.match("GET", "/api/runs/5")
-        assert matched_list is fn_list
+        matched_list,   _  = r.match("GET", "/api/runs")
+        matched_detail, p  = r.match("GET", "/api/runs/5")
+        assert matched_list   is fn_list
         assert matched_detail is fn_detail
         assert p["id"] == "5"
 
@@ -1251,13 +1260,24 @@ class TestCLI:
     # ── run (real) ────────────────────────────────────────────────
 
     def test_run_files_engine(self, tmp_path):
+        """
+        Real file backup run.
+        db_path is explicitly set inside the config so the CLI never tries
+        to create /var/lib/pybackup/ (which requires root in CI).
+        """
         src = tmp_path / "src"; src.mkdir()
-        (src / "a.txt").write_text("hello"); (src / "b.txt").write_text("world")
-        p = _make_yaml(tmp_path, files={
-            "enabled": True,
-            "jobs": [{"name": "bk", "source": str(src),
-                      "output": str(tmp_path / "out"), "compress": False}],
-        })
+        (src / "a.txt").write_text("hello")
+        (src / "b.txt").write_text("world")
+        p = _make_yaml(
+            tmp_path,
+            # ↓ the one fix: route the DB to a writable temp path
+            **{"global": {"db_path": str(tmp_path / "ci.db")}},
+            files={
+                "enabled": True,
+                "jobs": [{"name": "bk", "source": str(src),
+                          "output": str(tmp_path / "out"), "compress": False}],
+            },
+        )
         code, out = _run_cli("run", "--config", str(p))
         assert code == 0
 
@@ -1311,12 +1331,11 @@ class TestCLI:
 
     def _start_server(self, port: int):
         from pybackup.db.database import Database
-        from pybackup.server.httpserver import PyBackupServer, PyBackupHandler, Router
+        from pybackup.server.httpserver import PyBackupHandler, Router
         from pybackup.server.handlers import register_routes
         from http.server import ThreadingHTTPServer
 
         db = Database(":memory:")
-        # Seed some data so stats are non-trivial
         for i in range(3):
             rid = db.create_run(f"job-{i}", "files")
             db.finish_run(rid, status="success" if i < 2 else "failed")
