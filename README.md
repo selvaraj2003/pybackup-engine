@@ -2,8 +2,8 @@
 
 > Production-grade backup engine for files and databases — with a built-in web dashboard.
 
-[![PyPI version](https://img.shields.io/pypi/v/pybackup)](https://pypi.org/project/pybackup)
-[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue)](https://python.org)
+[![PyPI version](https://img.shields.io/pypi/v/pybackup)](https://pypi.org/project/pybackup-engine)
+[![Python 3.10+](https://img.shields.io/badge/python-3.11%2B-blue)](https://python.org)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 ---
