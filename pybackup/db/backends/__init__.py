@@ -78,6 +78,11 @@ def get_database(config: dict[str, Any]) -> Any:
     logger.info("Using database backend: %s", backend)
 
     if backend == "sqlite":
-        db_path = db_cfg.get("name", "/var/lib/pybackup/pybackup.db")
+        # Priority: database.name → global.db_path → constants default
+        from pybackup.constants import DEFAULT_DB_PATH
+
+        db_path = (
+            db_cfg.get("name") or config.get("global", {}).get("db_path") or str(DEFAULT_DB_PATH)
+        )
         return cls(db_path)
     return cls(db_cfg)
