@@ -5,8 +5,8 @@ Global constants for pybackup.
 from pathlib import Path
 
 # ─── Application ────────────────────────────────────────────────────
-APP_NAME = "pybackup"
-APP_VERSION = "1.0.0"
+APP_NAME = "pybackup-engine"
+APP_VERSION = "2.0.0"
 
 # ─── Default paths ──────────────────────────────────────────────────
 DEFAULT_CONFIG_PATH = Path("/etc/pybackup/pybackup.yaml")

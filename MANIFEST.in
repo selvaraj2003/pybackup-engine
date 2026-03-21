@@ -1,0 +1,6 @@
+include README.md
+include LICENSE
+include pybackup.yaml.example
+include crontab.example
+recursive-include pybackup/static *
+recursive-include tests *.py

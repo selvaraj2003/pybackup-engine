@@ -1,61 +1,105 @@
 [build-system]
-requires = ["setuptools>=68", "wheel"]
+requires      = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "pybackup-engine"
-version = "0.1.1"
-description = "Production-grade backup engine for files and databases with a web UI"
-readme = "README.md"
-license = "MIT"
+name        = "pybackup-engine"
+version     = "2.0.0"
+description = "Production-grade backup engine for files, PostgreSQL, MySQL, MongoDB and MSSQL — with a built-in web dashboard, login system and pluggable database backends."
+readme      = "README.md"
+license     = { text = "MIT" }
 requires-python = ">=3.10"
-authors = [{ name = "pybackup-engine Contributors" }]
-keywords = ["backup", "database", "mongodb", "postgres", "mysql", "mssql", "files"]
+authors     = [{ name = "Selvaraj Iyyappan" }]
+
+keywords = [
+    "backup", "database backup", "postgresql backup", "mysql backup",
+    "mongodb backup", "mssql backup", "file backup", "backup engine",
+    "backup dashboard", "backup tool", "backup automation",
+    "pg_dump", "mysqldump", "mongodump", "backup cli",
+]
+
 classifiers = [
     "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Environment :: Web Environment",
     "Intended Audience :: System Administrators",
     "Intended Audience :: Developers",
-    "Intended Audience :: Information Technology",
-    "Topic :: System :: Archiving :: Backup",
-    "Topic :: System :: Systems Administration",
+    "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.10",
-    "Operating System :: POSIX :: Linux"
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: System :: Archiving :: Backup",
+    "Topic :: Database",
+    "Topic :: System :: Systems Administration",
+    "Topic :: Internet :: WWW/HTTP :: WSGI :: Application",
 ]
 
 dependencies = [
-    "click",
-    "PyYAML",
+    "click>=8.1",
+    "PyYAML>=6.0",
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=7.0", "pytest-cov", "black", "ruff", "mypy"]
+postgresql = ["psycopg2-binary>=2.9"]
+mysql      = ["PyMySQL>=1.1"]
+mongodb    = ["pymongo>=4.0"]
+mssql      = ["pyodbc>=5.0"]
+all        = [
+    "psycopg2-binary>=2.9",
+    "PyMySQL>=1.1",
+    "pymongo>=4.0",
+    "pyodbc>=5.0",
+]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "black>=23.0",
+    "ruff>=0.1.0",
+    "bump2version>=1.0",
+]
 
 [project.scripts]
 pybackup = "pybackup.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/selvaraj2003/pybackup"
-Documentation = "https://github.com/selvaraj2003/pybackup"
-Repository = "https://github.com/selvaraj2003/pybackup"
-Issues = "https://github.com/selvaraj2003/pybackup"
+Homepage      = "https://github.com/selvaraj2003/pybackup-engine"
+Documentation = "https://github.com/selvaraj2003/pybackup-engine#readme"
+Repository    = "https://github.com/selvaraj2003/pybackup-engine"
+Issues        = "https://github.com/selvaraj2003/pybackup-engine/issues"
+Changelog     = "https://github.com/selvaraj2003/pybackup-engine/releases"
 
 [tool.setuptools.packages.find]
-where = ["."]
-include = ["pybackup-engine*"]
+where   = ["."]
+include = ["pybackup*"]
 
 [tool.setuptools.package-data]
-"pybackup.static" = ["**/*"]
+"pybackup.static"          = ["**/*"]
+"pybackup.static.css"      = ["*.css"]
+"pybackup.static.js"       = ["*.js"]
 
 [tool.black]
-line-length = 100
-target-version = ["py311"]
+line-length    = 100
+target-version = ["py310"]
 
 [tool.ruff]
 line-length = 100
-select = ["E", "F", "W", "I", "UP"]
 
-[tool.mypy]
-python_version = "3.11"
-strict = true
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.bumpversion]
+current_version = "2.0.0"
+commit          = true
+tag             = true
+tag_name        = "v{new_version}"
+
+[[tool.bumpversion.files]]
+filename = "pyproject.toml"
+search   = 'version = "{current_version}"'
+replace  = 'version = "{new_version}"'
+
+[[tool.bumpversion.files]]
+filename = "pybackup/__init__.py"
+search   = '__version__ = "{current_version}"'
+replace  = '__version__ = "{new_version}"'

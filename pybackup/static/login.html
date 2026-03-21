@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PyBackup — Login</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="/css/app.css"/>
+  <style>
+    body { display:flex; align-items:center; justify-content:center; min-height:100vh; background:var(--bg); }
+    .login-wrap { width:100%; max-width:400px; padding:24px; }
+    .login-logo { display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:32px; }
+    .login-logo svg { flex-shrink:0; }
+    .login-logo-text { font-family:'Space Grotesk',sans-serif; font-size:1.4rem; font-weight:700; color:var(--text); }
+    .login-card { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:32px; box-shadow:var(--shadow); }
+    .login-title { font-family:'Space Grotesk',sans-serif; font-size:1.2rem; font-weight:600; color:var(--text); margin-bottom:6px; }
+    .login-sub { font-size:.875rem; color:var(--text2); margin-bottom:28px; }
+    .form-group { margin-bottom:18px; }
+    .form-label { display:block; font-size:.8rem; font-weight:500; color:var(--text2); margin-bottom:6px; font-family:'Space Grotesk',sans-serif; text-transform:uppercase; letter-spacing:.04em; }
+    .form-input { width:100%; background:var(--bg3); border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text); padding:10px 14px; font-size:.9rem; font-family:'Inter',sans-serif; outline:none; transition:border-color .2s; }
+    .form-input:focus { border-color:var(--accent); }
+    .form-input::placeholder { color:var(--text3); }
+    .login-btn { width:100%; padding:11px; background:var(--accent); color:#fff; border:none; border-radius:var(--radius-sm); font-family:'Space Grotesk',sans-serif; font-size:.925rem; font-weight:600; cursor:pointer; transition:background .2s, transform .1s; margin-top:8px; }
+    .login-btn:hover { background:var(--accent-hover); }
+    .login-btn:active { transform:scale(.98); }
+    .login-btn:disabled { opacity:.6; cursor:not-allowed; }
+    .error-msg { background:var(--red-bg); border:1px solid rgba(239,68,68,.2); color:var(--red); border-radius:var(--radius-sm); padding:10px 14px; font-size:.85rem; margin-bottom:16px; display:none; }
+    .error-msg.show { display:block; }
+    .theme-pill { position:fixed; top:16px; right:16px; display:flex; align-items:center; gap:6px; background:var(--bg2); border:1px solid var(--border); border-radius:99px; padding:6px 12px; cursor:pointer; font-size:.8rem; color:var(--text2); font-family:'Space Grotesk',sans-serif; }
+    .theme-pill svg { width:14px; height:14px; }
+    .setup-hint { text-align:center; margin-top:20px; font-size:.78rem; color:var(--text3); }
+    .setup-hint code { background:var(--bg3); padding:2px 6px; border-radius:4px; font-family:monospace; color:var(--text2); }
+  </style>
+</head>
+<body>
+
+<button class="theme-pill" id="themeBtn">
+  <svg class="icon-sun" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="4" stroke="currentColor" stroke-width="1.5"/><path d="M10 2v2M10 16v2M2 10h2M16 10h2M4.22 4.22l1.42 1.42M14.36 14.36l1.42 1.42M4.22 15.78l1.42-1.42M14.36 5.64l1.42-1.42" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+  <svg class="icon-moon" viewBox="0 0 20 20" fill="none"><path d="M17 13A7 7 0 0 1 7 3a7 7 0 1 0 10 10z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+</button>
+
+<div class="login-wrap">
+  <div class="login-logo">
+    <svg width="32" height="32" viewBox="0 0 28 28" fill="none">
+      <rect width="28" height="28" rx="8" fill="var(--accent)"/>
+      <path d="M7 9h14M7 14h14M7 19h9" stroke="white" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+    <span class="login-logo-text">PyBackup</span>
+  </div>
+
+  <div class="login-card">
+    <div class="login-title">Welcome back</div>
+    <div class="login-sub">Sign in to your dashboard</div>
+
+    <div class="error-msg" id="errorMsg"></div>
+
+    <form id="loginForm">
+      <div class="form-group">
+        <label class="form-label" for="username">Username</label>
+        <input class="form-input" type="text" id="username" name="username"
+               placeholder="Enter your username" autocomplete="username" required autofocus/>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="password">Password</label>
+        <input class="form-input" type="password" id="password" name="password"
+               placeholder="Enter your password" autocomplete="current-password" required/>
+      </div>
+      <button class="login-btn" type="submit" id="loginBtn">Sign In</button>
+    </form>
+  </div>
+
+  <div class="setup-hint" id="setupHint" style="display:none">
+    No users found. Create the first admin:<br/>
+    <code>pybackup user add --username admin --role admin</code>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+// Theme
+const html = document.documentElement;
+const saved = localStorage.getItem('pb-theme') || 'dark';
+html.setAttribute('data-theme', saved);
+document.getElementById('themeBtn').addEventListener('click', () => {
+  const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  html.setAttribute('data-theme', next);
+  localStorage.setItem('pb-theme', next);
+});
+
+// Check if any users exist
+fetch('/api/auth/setup-needed')
+  .then(r => r.json())
+  .then(d => { if (d.setup_needed) document.getElementById('setupHint').style.display = 'block'; })
+  .catch(() => {});
+
+// Login form
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('loginBtn');
+  const err = document.getElementById('errorMsg');
+  const username = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value;
+
+  btn.disabled = true;
+  btn.textContent = 'Signing in…';
+  err.classList.remove('show');
+
+  try {
+    const resp = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
+    });
+    const data = await resp.json();
+
+    if (resp.ok) {
+      localStorage.setItem('pb-session', data.token);
+      localStorage.setItem('pb-user', JSON.stringify({ username: data.username, role: data.role }));
+      window.location.href = '/';
+    } else {
+      err.textContent = data.error || 'Invalid credentials';
+      err.classList.add('show');
+      btn.disabled = false;
+      btn.textContent = 'Sign In';
+    }
+  } catch {
+    err.textContent = 'Server unreachable. Please try again.';
+    err.classList.add('show');
+    btn.disabled = false;
+    btn.textContent = 'Sign In';
+  }
+});
+</script>
+</body>
+</html>

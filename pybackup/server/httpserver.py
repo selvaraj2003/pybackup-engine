@@ -2,9 +2,10 @@
 Pure-Python HTTP server for the pybackup web dashboard.
 No Flask. No FastAPI. No Django. Just stdlib http.server.
 
-Router supports:
-  - Exact routes:   /api/runs
-  - Param routes:   /api/runs/:id
+Auth flow:
+  - /login.html          → always served (public)
+  - /api/auth/*          → always served (public)
+  - everything else      → served normally; JS checks session + redirects
 """
 from __future__ import annotations
 
@@ -24,34 +25,21 @@ from pybackup.utils.exceptions import ServerError
 logger = logging.getLogger(__name__)
 _STATIC_DIR = Path(__file__).parent.parent / "static"
 
+# Public API routes that never require a session
+_PUBLIC_API_PREFIXES = ("/api/auth/login", "/api/auth/setup-needed")
+
 
 # ── Router ────────────────────────────────────────────────────────────
 
 class Router:
-    """
-    Pattern-based HTTP router.
-
-    Supports:
-        /api/runs          — exact match
-        /api/runs/:id      — named param capture
-    """
+    """Pattern-based HTTP router supporting :param named segments."""
 
     def __init__(self) -> None:
-        # Each entry: (method, compiled_regex, param_names, handler)
         self._routes: list[tuple[str, re.Pattern, list[str], Callable]] = []
 
     def add(self, method: str, path: str, fn: Callable) -> None:
-        """Register a route. Use :name for path parameters (e.g. /api/runs/:id)."""
-        param_names: list[str] = []
-        # Convert /api/runs/:id → /api/runs/(?P<id>[^/]+)
-        pattern = re.sub(
-            r":([a-zA-Z_][a-zA-Z0-9_]*)",
-            lambda m: f"(?P<{m.group(1)}>[^/]+)",
-            re.escape(path).replace(r"\:",":")   # re.escape damages :name
-        )
-        # Re-do properly: escape the non-param parts only
         parts = path.split("/")
-        regex_parts = []
+        regex_parts, param_names = [], []
         for part in parts:
             if part.startswith(":"):
                 name = part[1:]
@@ -117,14 +105,19 @@ def error_response(message: str, status: int = 400) -> tuple[int, dict, bytes]:
     return json_response({"error": message}, status)
 
 
-# ── Handler ───────────────────────────────────────────────────────────
+def redirect_response(location: str) -> tuple[int, dict, bytes]:
+    return 302, {"Location": location, "Content-Length": "0"}, b""
+
+
+# ── Request handler ───────────────────────────────────────────────────
 
 class PyBackupHandler(BaseHTTPRequestHandler):
-    router: Router
-    db: Any
+    router:   Router
+    db:       Any
+    user_db:  Any   # pybackup.auth.UserDB instance
 
     def log_message(self, fmt: str, *args: Any) -> None:  # type: ignore[override]
-        logger.debug("HTTP %s — %s", self.address_string(), fmt % args)
+        logger.debug("HTTP %s %s", self.address_string(), fmt % args)
 
     def log_error(self, fmt: str, *args: Any) -> None:  # type: ignore[override]
         logger.warning("HTTP error: %s", fmt % args)
@@ -133,7 +126,7 @@ class PyBackupHandler(BaseHTTPRequestHandler):
         return {
             "Access-Control-Allow-Origin": "*",
             "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
-            "Access-Control-Allow-Headers": "Content-Type",
+            "Access-Control-Allow-Headers": "Content-Type, Authorization",
         }
 
     def _send(self, status: int, headers: dict, body: bytes) -> None:
@@ -169,20 +162,33 @@ class PyBackupHandler(BaseHTTPRequestHandler):
         self._serve_static(path)
 
     def _serve_static(self, rel_path: str) -> None:
+        # Security: prevent directory traversal
         safe = Path(rel_path.lstrip("/"))
         if ".." in safe.parts:
             return self._send(*error_response("Forbidden", 403))
-        fp = _STATIC_DIR / (safe if str(safe) not in ("", ".") else Path("index.html"))
+
+        # Resolve file
+        if str(safe) in ("", "."):
+            fp = _STATIC_DIR / "index.html"
+        else:
+            fp = _STATIC_DIR / safe
+
+        # Unknown paths → SPA fallback (index.html handles routing via JS)
         if not fp.exists() or not fp.is_file():
-            fp = _STATIC_DIR / "index.html"   # SPA fallback
+            fp = _STATIC_DIR / "index.html"
+
         if not fp.exists():
             return self._send(*error_response("Not found", 404))
+
         mime, _ = mimetypes.guess_type(str(fp))
         data = fp.read_bytes()
+
+        # No caching for HTML (so auth redirects work immediately)
+        cache = "no-cache" if str(fp).endswith(".html") else "public, max-age=3600"
         self._send(200, {
             "Content-Type": mime or "application/octet-stream",
             "Content-Length": str(len(data)),
-            "Cache-Control": "public, max-age=3600",
+            "Cache-Control": cache,
         }, data)
 
     def do_GET(self)     -> None: self._dispatch("GET")
@@ -199,16 +205,17 @@ class PyBackupServer:
 
     Usage::
 
-        server = PyBackupServer(db=db, host="0.0.0.0", port=8741)
-        server.start()   # blocks until SIGINT / SIGTERM
+        server = PyBackupServer(db=db, host="0.0.0.0", port=8200)
+        server.start()
     """
 
-    def __init__(self, db: Any, host: str = "0.0.0.0", port: int = 8741) -> None:
+    def __init__(self, db: Any, user_db: Any, host: str = "0.0.0.0", port: int = 8200) -> None:
         from pybackup.server.handlers import register_routes
         router = Router()
         register_routes(router)
-        PyBackupHandler.router = router
-        PyBackupHandler.db = db
+        PyBackupHandler.router   = router
+        PyBackupHandler.db       = db
+        PyBackupHandler.user_db  = user_db
         self._httpd = ThreadingHTTPServer((host, port), PyBackupHandler)
         self.host = host
         self.port = port
@@ -220,7 +227,6 @@ class PyBackupServer:
             logger.info("Signal %d — shutting down…", sig)
             threading.Thread(target=self._httpd.shutdown, daemon=True).start()
 
-        # signal handlers can only be registered from the main thread
         import threading as _t
         if _t.current_thread() is _t.main_thread():
             signal.signal(signal.SIGINT,  _shutdown)

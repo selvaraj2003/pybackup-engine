@@ -1,17 +1,16 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>PyBackup — Dashboard</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/css/app.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="/css/app.css"/>
 </head>
 <body>
 
-<!-- ═══════════════════════════ SIDEBAR ════════════════════════════ -->
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-logo">
     <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
@@ -20,7 +19,6 @@
     </svg>
     <span class="logo-text">PyBackup</span>
   </div>
-
   <nav class="sidebar-nav">
     <a class="nav-item active" data-view="dashboard" href="#">
       <svg viewBox="0 0 20 20" fill="none"><rect x="2" y="2" width="7" height="7" rx="1.5" fill="currentColor"/><rect x="11" y="2" width="7" height="7" rx="1.5" fill="currentColor" opacity=".4"/><rect x="2" y="11" width="7" height="7" rx="1.5" fill="currentColor" opacity=".4"/><rect x="11" y="11" width="7" height="7" rx="1.5" fill="currentColor" opacity=".4"/></svg>
@@ -34,95 +32,72 @@
       <svg viewBox="0 0 20 20" fill="none"><path d="M10 2L2 6v8l8 4 8-4V6l-8-4z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M10 2v12M2 6l8 4 8-4" stroke="currentColor" stroke-width="1.5"/></svg>
       Engines
     </a>
+    <a class="nav-item" data-view="users" href="#">
+      <svg viewBox="0 0 20 20" fill="none"><circle cx="8" cy="7" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M2 17c0-3 2.7-5 6-5s6 2 6 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M15 11a3 3 0 0 1 0 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M17 13.5c.8.4 1.5 1.3 1.5 2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Users
+    </a>
     <a class="nav-item" data-view="settings" href="#">
       <svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M10 2v2M10 16v2M2 10h2M16 10h2M4.22 4.22l1.42 1.42M14.36 14.36l1.42 1.42M4.22 15.78l1.42-1.42M14.36 5.64l1.42-1.42" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
       Settings
     </a>
   </nav>
-
   <div class="sidebar-footer">
-    <span class="version-badge">v1.0.0</span>
+    <span class="version-badge">v2.0.0</span>
   </div>
 </aside>
 
-<!-- ═══════════════════════════ MAIN ════════════════════════════════ -->
 <div class="main-wrapper">
-
-  <!-- Top bar -->
   <header class="topbar">
     <div class="topbar-left">
-      <button class="menu-btn" id="menuToggle" aria-label="Toggle menu">
+      <button class="menu-btn" id="menuToggle">
         <svg viewBox="0 0 20 20" fill="none"><path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
       </button>
       <h1 class="topbar-title" id="pageTitle">Dashboard</h1>
     </div>
     <div class="topbar-right">
-      <div class="status-dot" id="statusDot" title="Server status"></div>
-      <button class="icon-btn" id="refreshBtn" title="Refresh data">
+      <div class="status-dot" id="statusDot"></div>
+      <button class="icon-btn" id="refreshBtn">
         <svg viewBox="0 0 20 20" fill="none"><path d="M4 10a6 6 0 1 0 1.2-3.6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M4 5v4h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
-      <button class="theme-toggle" id="themeToggle" title="Toggle theme">
+      <button class="theme-toggle" id="themeToggle">
         <svg class="icon-sun" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="4" stroke="currentColor" stroke-width="1.5"/><path d="M10 2v2M10 16v2M2 10h2M16 10h2M4.22 4.22l1.42 1.42M14.36 14.36l1.42 1.42M4.22 15.78l1.42-1.42M14.36 5.64l1.42-1.42" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
         <svg class="icon-moon" viewBox="0 0 20 20" fill="none"><path d="M17 13A7 7 0 0 1 7 3a7 7 0 1 0 10 10z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </button>
+      <div class="user-chip">
+        <svg viewBox="0 0 20 20" fill="none" width="14" height="14"><circle cx="10" cy="7" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M3 17c0-3 3.1-5 7-5s7 2 7 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <span id="userBadge"></span>
+      </div>
+      <button class="icon-btn" id="logoutBtn" title="Logout">
+        <svg viewBox="0 0 20 20" fill="none"><path d="M13 15l3-5-3-5M16 10H8M8 4H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
     </div>
   </header>
 
-  <!-- ── Dashboard View ── -->
+  <!-- Dashboard -->
   <section class="view active" id="view-dashboard">
-    <div class="stats-grid" id="statsGrid">
-      <div class="stat-card" id="statTotal">
-        <div class="stat-icon stat-blue"><svg viewBox="0 0 20 20" fill="none"><rect x="3" y="5" width="14" height="12" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M3 9h14" stroke="currentColor" stroke-width="1.5"/><path d="M7 5V3M13 5V3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>
-        <div class="stat-body"><div class="stat-value" id="valTotal">—</div><div class="stat-label">Total Runs</div></div>
-      </div>
-      <div class="stat-card" id="statSuccess">
-        <div class="stat-icon stat-green"><svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.5"/><path d="M7 10l2 2 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-        <div class="stat-body"><div class="stat-value" id="valSuccess">—</div><div class="stat-label">Successful</div></div>
-      </div>
-      <div class="stat-card" id="statFailed">
-        <div class="stat-icon stat-red"><svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.5"/><path d="M13 7l-6 6M7 7l6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>
-        <div class="stat-body"><div class="stat-value" id="valFailed">—</div><div class="stat-label">Failed</div></div>
-      </div>
-      <div class="stat-card" id="statRate">
-        <div class="stat-icon stat-purple"><svg viewBox="0 0 20 20" fill="none"><path d="M3 14l4-4 3 3 4-5 3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-        <div class="stat-body"><div class="stat-value" id="valRate">—</div><div class="stat-label">Success Rate</div></div>
-      </div>
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-icon stat-blue"><svg viewBox="0 0 20 20" fill="none"><rect x="3" y="5" width="14" height="12" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M3 9h14" stroke="currentColor" stroke-width="1.5"/></svg></div><div class="stat-body"><div class="stat-value" id="valTotal">—</div><div class="stat-label">Total Runs</div></div></div>
+      <div class="stat-card"><div class="stat-icon stat-green"><svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.5"/><path d="M7 10l2 2 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="stat-body"><div class="stat-value" id="valSuccess">—</div><div class="stat-label">Successful</div></div></div>
+      <div class="stat-card"><div class="stat-icon stat-red"><svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.5"/><path d="M13 7l-6 6M7 7l6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div><div class="stat-body"><div class="stat-value" id="valFailed">—</div><div class="stat-label">Failed</div></div></div>
+      <div class="stat-card"><div class="stat-icon stat-purple"><svg viewBox="0 0 20 20" fill="none"><path d="M3 14l4-4 3 3 4-5 3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="stat-body"><div class="stat-value" id="valRate">—</div><div class="stat-label">Success Rate</div></div></div>
     </div>
-
     <div class="panel-row">
-      <div class="panel" style="flex:2">
-        <div class="panel-header"><h2>Activity (30 days)</h2></div>
-        <div class="chart-container">
-          <canvas id="activityChart"></canvas>
-        </div>
-      </div>
-      <div class="panel" style="flex:1">
-        <div class="panel-header"><h2>By Engine</h2></div>
-        <div class="chart-container">
-          <canvas id="engineChart"></canvas>
-        </div>
-      </div>
+      <div class="panel" style="flex:2"><div class="panel-header"><h2>Activity (30 days)</h2></div><div class="chart-container"><canvas id="activityChart"></canvas></div></div>
+      <div class="panel" style="flex:1"><div class="panel-header"><h2>By Engine</h2></div><div class="chart-container"><canvas id="engineChart"></canvas></div></div>
     </div>
-
     <div class="panel">
-      <div class="panel-header">
-        <h2>Recent Activity</h2>
-        <a class="panel-link" data-view="runs" href="#">View all →</a>
-      </div>
+      <div class="panel-header"><h2>Recent Activity</h2><a class="panel-link" data-view="runs" href="#">View all →</a></div>
       <div class="table-wrap">
-        <table class="data-table" id="recentTable">
-          <thead><tr><th>Job</th><th>Engine</th><th>Status</th><th>Started</th><th>Duration</th></tr></thead>
-          <tbody id="recentBody"></tbody>
-        </table>
+        <table class="data-table"><thead><tr><th>Job</th><th>Engine</th><th>Status</th><th>Started</th><th>Duration</th></tr></thead><tbody id="recentBody"></tbody></table>
       </div>
     </div>
   </section>
 
-  <!-- ── Runs View ── -->
+  <!-- Runs -->
   <section class="view" id="view-runs">
     <div class="runs-toolbar">
       <div class="filter-group">
-        <input class="search-input" id="runSearch" type="text" placeholder="Filter by job name…" />
+        <input class="search-input" id="runSearch" type="text" placeholder="Filter by job name…"/>
         <select class="select-input" id="runStatusFilter">
           <option value="">All statuses</option>
           <option value="success">Success</option>
@@ -133,32 +108,54 @@
       </div>
       <button class="btn btn-primary" id="addTestRunBtn">+ Add Test Run</button>
     </div>
-
     <div class="panel">
       <div class="table-wrap">
-        <table class="data-table" id="runsTable">
-          <thead><tr><th>#</th><th>Job</th><th>Engine</th><th>Status</th><th>Started</th><th>Duration</th><th>Output</th><th></th></tr></thead>
-          <tbody id="runsBody"></tbody>
-        </table>
+        <table class="data-table"><thead><tr><th>#</th><th>Job</th><th>Engine</th><th>Status</th><th>Started</th><th>Duration</th><th>Output</th><th></th></tr></thead><tbody id="runsBody"></tbody></table>
       </div>
       <div class="pagination" id="runsPagination"></div>
     </div>
   </section>
 
-  <!-- ── Engines View ── -->
+  <!-- Engines -->
   <section class="view" id="view-engines">
-    <div class="engines-grid" id="enginesGrid">
-      <!-- Populated by JS -->
+    <div class="engines-grid" id="enginesGrid"></div>
+  </section>
+
+  <!-- Users (admin) -->
+  <section class="view" id="view-users">
+    <div class="panel" style="max-width:680px;margin-bottom:20px">
+      <div class="panel-header"><h2>Add User</h2></div>
+      <form id="addUserForm" style="padding:0 20px 20px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px">
+          <div><label class="form-label-sm">Username</label><input class="form-input-sm" id="newUsername" type="text" required placeholder="username"/></div>
+          <div><label class="form-label-sm">Password</label><input class="form-input-sm" id="newPassword" type="password" required placeholder="min 8 chars" minlength="8"/></div>
+          <div><label class="form-label-sm">Role</label>
+            <select class="select-input" id="newRole" style="width:100%">
+              <option value="viewer">Viewer</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+          <div><label class="form-label-sm">Email (optional)</label><input class="form-input-sm" id="newEmail" type="email" placeholder="user@example.com"/></div>
+        </div>
+        <div style="margin-top:8px;color:var(--red);font-size:.82rem" id="addUserError"></div>
+        <button class="btn btn-primary" type="submit" style="margin-top:14px">Create User</button>
+      </form>
+    </div>
+    <div class="panel" id="usersGrid">
+      <div class="panel-header"><h2>All Users</h2></div>
+      <div class="table-wrap">
+        <table class="data-table"><thead><tr><th>#</th><th>Username</th><th>Role</th><th>Email</th><th>Last Login</th><th></th></tr></thead><tbody id="usersBody"></tbody></table>
+      </div>
     </div>
   </section>
 
-  <!-- ── Settings View ── -->
+  <!-- Settings -->
   <section class="view" id="view-settings">
     <div class="panel settings-panel">
       <div class="panel-header"><h2>Appearance</h2></div>
       <div class="settings-form">
         <div class="setting-row">
-          <div class="setting-info"><div class="setting-label">Theme</div><div class="setting-desc">Choose between dark and light mode</div></div>
+          <div class="setting-info"><div class="setting-label">Theme</div><div class="setting-desc">Dark or light mode</div></div>
           <div class="theme-selector">
             <button class="theme-btn active" data-theme-val="dark">Dark</button>
             <button class="theme-btn" data-theme-val="light">Light</button>
@@ -172,7 +169,7 @@
       <div class="settings-form">
         <div class="setting-row">
           <div class="setting-info"><div class="setting-label">Retention Days</div><div class="setting-desc">How long to keep backup records</div></div>
-          <input class="setting-input" type="number" id="retentionDays" min="1" max="365" value="7" />
+          <input class="setting-input" type="number" id="retentionDays" min="1" max="365" value="7"/>
         </div>
         <div class="setting-row">
           <div class="setting-info"><div class="setting-label">Log Level</div><div class="setting-desc">Verbosity of system logs</div></div>
@@ -191,32 +188,44 @@
     </div>
 
     <div class="panel settings-panel">
+      <div class="panel-header"><h2>Change Password</h2></div>
+      <form id="changePasswordForm" style="padding:0 20px 20px">
+        <div style="display:flex;flex-direction:column;gap:14px;margin-top:16px;max-width:340px">
+          <div>
+            <label class="form-label-sm">Current Password</label>
+            <input class="form-input-sm" type="password" id="currentPassword" required placeholder="Your current password"/>
+          </div>
+          <div>
+            <label class="form-label-sm">New Password</label>
+            <input class="form-input-sm" type="password" id="newPassword2" required placeholder="Minimum 8 characters" minlength="8"/>
+          </div>
+          <div>
+            <label class="form-label-sm">Confirm New Password</label>
+            <input class="form-input-sm" type="password" id="confirmPassword" required placeholder="Repeat new password"/>
+          </div>
+          <div style="color:var(--red);font-size:.82rem" id="changePwError"></div>
+          <div style="color:var(--green);font-size:.82rem" id="changePwOk"></div>
+          <button class="btn btn-primary" type="submit" style="align-self:flex-start">Update Password</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="panel settings-panel">
       <div class="panel-header"><h2>About</h2></div>
       <div class="about-grid">
-        <div class="about-item"><span class="about-key">Version</span><span class="about-val">1.0.0</span></div>
+        <div class="about-item"><span class="about-key">Version</span><span class="about-val">2.0.0</span></div>
         <div class="about-item"><span class="about-key">Engine</span><span class="about-val">Pure Python stdlib</span></div>
         <div class="about-item"><span class="about-key">Database</span><span class="about-val">SQLite (WAL mode)</span></div>
-        <div class="about-item"><span class="about-key">License</span><span class="about-val">MIT</span></div>
+        <div class="about-item"><span class="about-key">Logged in as</span><span class="about-val" id="currentUserInfo">—</span></div>
       </div>
     </div>
   </section>
-
-</div><!-- /.main-wrapper -->
-
-<!-- Run detail modal -->
-<div class="modal-overlay" id="modalOverlay">
-  <div class="modal" id="runModal">
-    <div class="modal-header">
-      <h2 id="modalTitle">Run Details</h2>
-      <button class="modal-close" id="modalClose">×</button>
-    </div>
-    <div class="modal-body" id="modalBody"></div>
-  </div>
 </div>
 
-<!-- Toast -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal"><div class="modal-header"><h2 id="modalTitle">Run Details</h2><button class="modal-close" id="modalClose">×</button></div><div class="modal-body" id="modalBody"></div></div>
+</div>
 <div class="toast" id="toast"></div>
-
 <script src="/js/app.js"></script>
 </body>
 </html>

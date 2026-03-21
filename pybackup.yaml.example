@@ -1,55 +1,102 @@
-# pybackup.yaml — example configuration
-# Run: pybackup run -c pybackup.yaml
-# Dashboard: pybackup serve
+# pybackup.yaml — full configuration reference
+# Run:       pybackup run -c pybackup.yaml
+# Dashboard: pybackup serve -c pybackup.yaml
 
 version: 1
 
-# ── Global settings ────────────────────────────────────────────────
+# ── Global ────────────────────────────────────────────────────────────
 global:
   backup_root:    /backups
   retention_days: 7
   compress:       true
-  log_level:      INFO
-  # log_file:    /var/log/pybackup/pybackup.log  # optional file log
-  # db_path:     /var/lib/pybackup/pybackup.db   # SQLite path
+  log_level:      INFO          # DEBUG | INFO | WARNING | ERROR
+  # log_file:     /var/log/pybackup/pybackup.log
+  db_path:        /var/lib/pybackup/pybackup.db   # used when backend: sqlite
 
-# ── File backups ───────────────────────────────────────────────────
+# ── Internal metadata database ────────────────────────────────────────
+# Stores backup run history, settings, and user accounts.
+# Default is SQLite (zero config). Uncomment a block to switch backends.
+#
+# Like Django's DATABASES setting — just change the backend: value.
+
+# SQLite (default)
+database:
+  backend: sqlite
+  name:    /var/lib/pybackup/pybackup.db
+
+# PostgreSQL — pip install psycopg2-binary
+# database:
+#   backend:  postgresql
+#   host:     localhost
+#   port:     5432
+#   name:     pybackup
+#   user:     pybackup_user
+#   password: ${DB_PASSWORD}
+
+# MySQL / MariaDB — pip install PyMySQL
+# database:
+#   backend:  mysql
+#   host:     localhost
+#   port:     3306
+#   name:     pybackup
+#   user:     pybackup_user
+#   password: ${MYSQL_PASSWORD}
+
+# MongoDB — pip install pymongo
+# database:
+#   backend:  mongodb
+#   host:     localhost
+#   port:     27017
+#   name:     pybackup
+#   user:     pybackup_user
+#   password: ${MONGO_PASSWORD}
+
+# MS SQL Server — pip install pyodbc
+# database:
+#   backend:  mssql
+#   host:     localhost
+#   port:     1433
+#   name:     pybackup
+#   user:     sa
+#   password: ${MSSQL_PASSWORD}
+
+# ── File backups ───────────────────────────────────────────────────────
 files:
   enabled: true
   jobs:
-    - name: app-configs
-      source: /etc/myapp
-      output: /backups/files/app-configs
+    - name:     app-configs
+      source:   /etc/myapp
+      output:   /backups/files/app-configs
       compress: true
       exclude:
         - "*.log"
         - "*.tmp"
         - "__pycache__"
 
-    - name: nginx-configs
-      source: /etc/nginx
-      output: /backups/files/nginx
+    - name:     nginx-configs
+      source:   /etc/nginx
+      output:   /backups/files/nginx
       compress: false
 
-# ── PostgreSQL ─────────────────────────────────────────────────────
+# ── PostgreSQL ─────────────────────────────────────────────────────────
 postgresql:
-  enabled: false
+  enabled: true
   jobs:
-    - name: prod-postgres
+    - name:     prod-postgres
       host:     localhost
       port:     5432
       database: myapp_production
       username: backup_user
-      password: ${PGPASSWORD}     # resolved from environment
-      format:   custom            # custom | plain | directory
+      password: ${PGPASSWORD}
+      format:   custom          # custom | plain | directory
       compress: true
       output:   /backups/postgres/prod
 
-# ── MySQL ──────────────────────────────────────────────────────────
+# ── MySQL ──────────────────────────────────────────────────────────────
 mysql:
   enabled: false
   jobs:
-    - name: prod-mysql
+    - name:               prod-mysql
       host:               localhost
       port:               3306
       database:           myapp
@@ -59,24 +106,24 @@ mysql:
       compress:           true
       output:             /backups/mysql/prod
 
-# ── MongoDB ────────────────────────────────────────────────────────
+# ── MongoDB ────────────────────────────────────────────────────────────
 mongodb:
   enabled: false
   jobs:
-    - name: prod-mongo
+    - name:     prod-mongo
       host:     localhost
       port:     27017
-      database: myapp       # omit to dump all databases
+      database: myapp
       username: backup_user
       password: ${MONGO_PASSWORD}
       auth_db:  admin
       output:   /backups/mongo/prod
 
-# ── MS SQL Server ──────────────────────────────────────────────────
+# ── MS SQL Server ──────────────────────────────────────────────────────
 mssql:
   enabled: false
   jobs:
-    - name: prod-mssql
+    - name:     prod-mssql
       host:     localhost
       port:     1433
       database: MyAppDB

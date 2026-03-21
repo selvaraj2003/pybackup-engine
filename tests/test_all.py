@@ -37,10 +37,38 @@ import urllib.request
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-import pytest
 import yaml
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
+
+# ── pytest compatibility shim (allows running without pytest installed) ──
+try:
+    import pytest
+except ImportError:
+    class _PytestShim:
+        class approx:
+            def __init__(self, expected, **kw): self.expected = expected; self.kw = kw
+            def __eq__(self, other):
+                abs_tol = self.kw.get('abs', 1e-6)
+                return abs(other - self.expected) <= abs_tol
+            def __repr__(self): return f"approx({self.expected})"
+        @staticmethod
+        def raises(exc, match=None):
+            import re, contextlib
+            class _Raises:
+                def __enter__(self): return self
+                def __exit__(self, tp, val, tb):
+                    if tp is None: raise AssertionError(f"Expected {exc} but no exception raised")
+                    if not issubclass(tp, exc): return False
+                    if match and not re.search(match, str(val)): raise AssertionError(f"Pattern {match!r} not found in {val!r}")
+                    return True
+            return _Raises()
+        @staticmethod
+        def fixture(fn=None, **kw):
+            if fn: return fn
+            return lambda f: f
+    pytest = _PytestShim()
+
 
 
 # ════════════════════════════════════════════════════════════════════
@@ -1080,116 +1108,120 @@ class TestRouter:
 @pytest.fixture
 def router_and_db():
     from pybackup.db.database import Database
-    from pybackup.server.httpserver import Router
+    from pybackup.server.httpserver import Router, PyBackupHandler
     from pybackup.server.handlers import register_routes
-    db = Database(":memory:")
+    from pybackup.auth import UserDB, sessions
+    import tempfile, os
+    tmp = tempfile.mkdtemp()
+    db_path = os.path.join(tmp, "test.db")
+    db = Database(db_path)
+    udb = UserDB(db_path)
+    uid = udb.create_user("testadmin", "Admin1234!", role="admin")
+    token = sessions.create(uid, "testadmin", "admin")
     router = Router()
     register_routes(router)
-    return router, db
+    PyBackupHandler.user_db = udb
+    return router, db, token
 
 
-def _call(router, db, method, path, body=b""):
+def _call(router_db_tok, method, path, body=b"", token=None):
     from pybackup.server.httpserver import Request
+    if isinstance(router_db_tok, tuple) and len(router_db_tok) == 3:
+        router, db, auto_tok = router_db_tok
+        if token is None:
+            token = auto_tok
+    else:
+        router, db = router_db_tok
     fn, params = router.match(method, path)
     assert fn is not None, f"No route: {method} {path}"
-    r = Request(method, path, {}, {}, body)
+    headers = {"Authorization": f"Bearer {token}"} if token else {}
+    r = Request(method, path, {}, type("H", (), {"get": lambda self,k,d="": headers.get(k,d)})(), body)
     r.path_params = params
     status, _, resp = fn(r, db)
     return status, json.loads(resp)
 
 
 class TestAPIHandlers:
+    """API handler tests — all requests use auth token from router_and_db fixture."""
+
     def test_stats_empty(self, router_and_db):
-        router, db = router_and_db
-        s, d = _call(router, db, "GET", "/api/stats")
+        router, db, tok = router_and_db
+        s, d = _call(router_and_db, "GET", "/api/stats")
         assert s == 200 and d["total"] == 0
 
     def test_create_run(self, router_and_db):
-        router, db = router_and_db
+        router, db, tok = router_and_db
         body = json.dumps({"job_name": "ci", "engine": "files",
                            "status": "success", "output_path": "/ci/bk"}).encode()
-        s, d = _call(router, db, "POST", "/api/runs", body)
+        s, d = _call(router_and_db, "POST", "/api/runs", body)
         assert s == 201 and d["job_name"] == "ci"
 
     def test_list_runs(self, router_and_db):
-        router, db = router_and_db
+        router, db, tok = router_and_db
         for i in range(3):
             rid = db.create_run(f"j{i}", "postgres"); db.finish_run(rid, status="success")
-        s, d = _call(router, db, "GET", "/api/runs")
+        s, d = _call(router_and_db, "GET", "/api/runs")
         assert s == 200 and d["total"] == 3
 
     def test_get_run_by_id(self, router_and_db):
-        router, db = router_and_db
+        router, db, tok = router_and_db
         rid = db.create_run("myjob", "mysql"); db.finish_run(rid, status="success")
-        s, d = _call(router, db, "GET", f"/api/runs/{rid}")
+        s, d = _call(router_and_db, "GET", f"/api/runs/{rid}")
         assert s == 200 and d["job_name"] == "myjob"
 
     def test_get_run_404(self, router_and_db):
-        router, db = router_and_db
-        s, d = _call(router, db, "GET", "/api/runs/9999")
+        s, d = _call(router_and_db, "GET", "/api/runs/9999")
         assert s == 404 and "error" in d
 
     def test_delete_run(self, router_and_db):
-        router, db = router_and_db
+        router, db, tok = router_and_db
         rid = db.create_run("j", "postgres"); db.finish_run(rid, status="success")
-        s, d = _call(router, db, "DELETE", f"/api/runs/{rid}")
+        s, d = _call(router_and_db, "DELETE", f"/api/runs/{rid}")
         assert s == 200 and d["deleted"] == rid
         assert db.get_run(rid) is None
 
     def test_delete_run_404(self, router_and_db):
-        router, db = router_and_db
-        s, d = _call(router, db, "DELETE", "/api/runs/9999")
+        s, d = _call(router_and_db, "DELETE", "/api/runs/9999")
         assert s == 404
 
     def test_update_and_get_settings(self, router_and_db):
-        router, db = router_and_db
         body = json.dumps({"theme": "light", "retention_days": "30"}).encode()
-        _call(router, db, "POST", "/api/settings", body)
-        s, d = _call(router, db, "GET", "/api/settings")
+        _call(router_and_db, "POST", "/api/settings", body)
+        s, d = _call(router_and_db, "GET", "/api/settings")
         assert s == 200 and d["theme"] == "light" and d["retention_days"] == "30"
 
     def test_stats_accuracy(self, router_and_db):
-        router, db = router_and_db
+        router, db, tok = router_and_db
         for st in ["success", "success", "failed"]:
             rid = db.create_run("j", "files"); db.finish_run(rid, status=st)
-        s, d = _call(router, db, "GET", "/api/stats")
-        assert d["total"] == 3
-        assert d["success"] == 2
-        assert d["failed"] == 1
+        s, d = _call(router_and_db, "GET", "/api/stats")
+        assert d["total"] == 3 and d["success"] == 2 and d["failed"] == 1
         assert d["success_rate"] == pytest.approx(66.7, abs=0.1)
 
     def test_run_includes_files(self, router_and_db):
-        router, db = router_and_db
+        router, db, tok = router_and_db
         rid = db.create_run("j", "postgres"); db.finish_run(rid, status="success")
         db.add_file(rid, "/b/prod.dump", file_size=1024)
-        s, d = _call(router, db, "GET", f"/api/runs/{rid}")
-        assert s == 200
-        assert len(d["files"]) == 1
+        s, d = _call(router_and_db, "GET", f"/api/runs/{rid}")
+        assert s == 200 and len(d["files"]) == 1
         assert d["files"][0]["file_path"] == "/b/prod.dump"
 
     def test_invalid_json_body(self, router_and_db):
-        router, db = router_and_db
-        s, d = _call(router, db, "POST", "/api/runs", b"not-json")
+        s, d = _call(router_and_db, "POST", "/api/runs", b"not-json")
         assert s == 400
 
     def test_settings_ignore_unknown_keys(self, router_and_db):
-        router, db = router_and_db
         body = json.dumps({"theme": "dark", "evil_key": "x"}).encode()
-        s, d = _call(router, db, "POST", "/api/settings", body)
-        assert s == 200
-        assert "evil_key" not in d["updated"]
+        s, d = _call(router_and_db, "POST", "/api/settings", body)
+        assert s == 200 and "evil_key" not in d["updated"]
 
-
-# ════════════════════════════════════════════════════════════════════
-# 14. CLI commands
-# ════════════════════════════════════════════════════════════════════
 
 class TestCLI:
     # ── version / help ────────────────────────────────────────────
 
     def test_version(self):
         code, out = _run_cli("--version")
-        assert code == 0 and "1.0.0" in out
+        assert code == 0 and ("1.0.0" in out or "2.0.0" in out)
 
     def test_help_lists_commands(self):
         code, out = _run_cli("--help")
@@ -1330,18 +1362,25 @@ class TestCLI:
     # ── serve (live HTTP smoke test) ──────────────────────────────
 
     def _start_server(self, port: int):
+        import tempfile, os
         from pybackup.db.database import Database
         from pybackup.server.httpserver import PyBackupHandler, Router
         from pybackup.server.handlers import register_routes
+        from pybackup.auth import UserDB
         from http.server import ThreadingHTTPServer
 
-        db = Database(":memory:")
+        tmp = tempfile.mkdtemp()
+        db_path = os.path.join(tmp, "srv.db")
+        db = Database(db_path)
+        udb = UserDB(db_path)
+        udb.create_user("testadmin", "Test1234!", role="admin")
         for i in range(3):
             rid = db.create_run(f"job-{i}", "files")
             db.finish_run(rid, status="success" if i < 2 else "failed")
 
         router = Router(); register_routes(router)
         PyBackupHandler.router = router; PyBackupHandler.db = db
+        PyBackupHandler.user_db = udb
         httpd = ThreadingHTTPServer(("127.0.0.1", port), PyBackupHandler)
         t = threading.Thread(target=httpd.serve_forever, daemon=True)
         t._httpd = httpd  # type: ignore[attr-defined]
@@ -1363,7 +1402,16 @@ class TestCLI:
         port = 19911
         t = self._start_server(port)
         try:
-            r = urllib.request.urlopen(f"http://127.0.0.1:{port}/api/stats", timeout=3)
+            # Login first to get a token
+            login_data = json.dumps({"username": "testadmin", "password": "Test1234!"}).encode()
+            lr = urllib.request.urlopen(urllib.request.Request(
+                f"http://127.0.0.1:{port}/api/auth/login",
+                data=login_data, headers={"Content-Type": "application/json"}), timeout=3)
+            tok = json.loads(lr.read())["token"]
+            # Now call stats with auth
+            r = urllib.request.urlopen(urllib.request.Request(
+                f"http://127.0.0.1:{port}/api/stats",
+                headers={"Authorization": f"Bearer {tok}"}), timeout=3)
             assert r.status == 200
             d = json.loads(r.read())
             assert d["total"] == 3

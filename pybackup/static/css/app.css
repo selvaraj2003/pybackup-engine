@@ -690,3 +690,127 @@ body {
   .runs-toolbar { flex-direction: column; align-items: stretch; }
   .filter-group { flex-direction: column; }
 }
+
+/* ═══════════════════════════════════════════════════════════
+   LOGIN
+   ═══════════════════════════════════════════════════════════ */
+.login-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: var(--bg);
+  z-index: 999;
+  align-items: center; justify-content: center;
+}
+.login-overlay.show { display: flex; }
+
+.login-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 36px 32px;
+  width: 100%; max-width: 380px;
+  box-shadow: var(--shadow);
+}
+
+.login-logo {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 24px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700; font-size: 1.2rem;
+  color: var(--text);
+}
+
+.login-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text2);
+  margin-bottom: 20px;
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+.login-error {
+  background: var(--red-bg);
+  color: var(--red);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  font-size: .82rem;
+  margin-bottom: 14px;
+  display: none;
+}
+.login-error.show { display: block; }
+
+.login-form { display: flex; flex-direction: column; gap: 14px; }
+
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-label { font-size: .8rem; font-weight: 500; color: var(--text2); }
+.form-input {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  padding: 9px 12px;
+  font-size: .875rem;
+  outline: none;
+  transition: border-color var(--transition);
+  width: 100%;
+}
+.form-input:focus { border-color: var(--accent); }
+.btn-full { width: 100%; justify-content: center; padding: 10px; }
+
+/* ── Sidebar user block ─────────────────────────────────── */
+.sidebar-user {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 16px;
+  border-top: 1px solid var(--border);
+  margin-top: auto;
+}
+.user-avatar {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: var(--accent-glow);
+  color: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700; font-size: .85rem;
+  flex-shrink: 0;
+}
+.user-info { flex: 1; min-width: 0; }
+.user-name { font-size: .82rem; font-weight: 600; color: var(--text); font-family: 'Space Grotesk', sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.user-role { font-size: .72rem; color: var(--text3); }
+.logout-btn {
+  width: 28px; height: 28px; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text3); cursor: pointer;
+  transition: background var(--transition), color var(--transition);
+  flex-shrink: 0;
+}
+.logout-btn svg { width: 15px; height: 15px; }
+.logout-btn:hover { background: var(--red-bg); color: var(--red); }
+
+/* ── Change password inputs ─────────────────────────────── */
+.setting-pw { width: 200px; }
+
+/* ── Auth additions ──────────────────────────────────────────────── */
+.user-chip {
+  display: flex; align-items: center; gap: 6px;
+  padding: 5px 10px;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 99px;
+  font-size: .8rem; font-weight: 500; color: var(--text2);
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+/* Form inputs inside panels */
+.form-label-sm {
+  display: block; font-size: .78rem; font-weight: 500;
+  color: var(--text2); margin-bottom: 5px;
+  font-family: 'Space Grotesk', sans-serif;
+  text-transform: uppercase; letter-spacing: .04em;
+}
+.form-input-sm {
+  width: 100%; background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); color: var(--text);
+  padding: 8px 12px; font-size: .875rem; font-family: 'Inter', sans-serif;
+  outline: none; transition: border-color var(--transition);
+}
+.form-input-sm:focus { border-color: var(--accent); }
+.form-input-sm::placeholder { color: var(--text3); }
