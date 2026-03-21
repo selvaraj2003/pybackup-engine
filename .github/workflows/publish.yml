@@ -1,8 +1,6 @@
 name: Build & Publish
 
 on:
-  push:
-    branches: ["**"]          # every branch push
   pull_request:
     branches: [main]
 
