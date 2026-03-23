@@ -45,7 +45,7 @@ logger = logging.getLogger("pybackup.cli")
 
 
 @click.group()
-@click.version_option("2.0.0", prog_name="pybackup")
+@click.version_option("2.1.0", prog_name="pybackup")
 def main() -> None:
     """PyBackup — production-ready backup engine with web UI.
 
@@ -203,16 +203,18 @@ def serve(host: str, port: int, db: str, config: Path | None) -> None:
 
         click.secho("\n  PyBackup Dashboard", bold=True, fg="bright_white")
         click.secho("  ─────────────────────────────────────", fg="bright_black")
-        click.secho(f"  Dashboard → http://{host}:{port}", fg="cyan", bold=True)
-        click.secho(f"  Database  : {db}", fg="bright_black")
 
         if not user_db.has_any_user():
             click.secho(
-                "\n  ⚠  No users found. Create one first:\n"
-                "     pybackup user add --username admin --role admin\n",
+                "  ⚠  No users found. Create one first:\n"
+                f"     pybackup user add --username admin --role admin\n"
+                f"  Dashboard → http://{host}:{port}",
                 fg="yellow",
             )
+            click.secho(f"  Database  : {db}", fg="bright_black")
         else:
+            click.secho(f"  Dashboard → http://{host}:{port}", fg="cyan", bold=True)
+            click.secho(f"  Database  : {db}", fg="bright_black")
             click.secho(f"  Users     : {user_db.count_admins()} admin(s)", fg="bright_black")
 
         click.secho("  Press Ctrl-C to stop.\n", fg="bright_black")

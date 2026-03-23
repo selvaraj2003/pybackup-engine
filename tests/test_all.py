@@ -1415,7 +1415,7 @@ class TestCLI:
 
     def test_version(self):
         code, out = _run_cli("--version")
-        assert code == 0 and ("1.0.0" in out or "2.0.0" in out)
+        assert code == 0 and ("1.0.0" in out or "2.1.0" in out)
 
     def test_help_lists_commands(self):
         code, out = _run_cli("--help")

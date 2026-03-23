@@ -8,6 +8,11 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="/css/app.css"/>
+  <script>
+    if (!localStorage.getItem('pb-session') && window.location.pathname !== '/login.html') {
+      window.location.replace('/login.html');
+    }
+  </script>
 </head>
 <body>
 
@@ -42,7 +47,7 @@
     </a>
   </nav>
   <div class="sidebar-footer">
-    <span class="version-badge">v2.0.0</span>
+    <span class="version-badge">v2.1.0</span>
   </div>
 </aside>
 
@@ -213,7 +218,7 @@
     <div class="panel settings-panel">
       <div class="panel-header"><h2>About</h2></div>
       <div class="about-grid">
-        <div class="about-item"><span class="about-key">Version</span><span class="about-val">2.0.0</span></div>
+        <div class="about-item"><span class="about-key">Version</span><span class="about-val">2.1.0</span></div>
         <div class="about-item"><span class="about-key">Engine</span><span class="about-val">Pure Python stdlib</span></div>
         <div class="about-item"><span class="about-key">Database</span><span class="about-val">SQLite (WAL mode)</span></div>
         <div class="about-item"><span class="about-key">Logged in as</span><span class="about-val" id="currentUserInfo">—</span></div>

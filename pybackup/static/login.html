@@ -79,6 +79,7 @@
 
 <script>
 'use strict';
+window.history.replaceState({}, '', '/');
 
 // Theme
 const html = document.documentElement;
@@ -119,7 +120,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     if (resp.ok) {
       localStorage.setItem('pb-session', data.token);
       localStorage.setItem('pb-user', JSON.stringify({ username: data.username, role: data.role }));
-      window.location.href = '/';
+      window.location.href = '/?open=dashboard';
     } else {
       err.textContent = data.error || 'Invalid credentials';
       err.classList.add('show');

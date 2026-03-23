@@ -4,12 +4,12 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name        = "pybackup-engine"
-version     = "2.0.0"
+version     = "2.1.0"
 description = "Production-grade backup engine for files, PostgreSQL, MySQL, MongoDB and MSSQL — with a built-in web dashboard, login system and pluggable database backends."
 readme      = "README.md"
 license     = "MIT"
 requires-python = ">=3.10"
-authors     = [{ name = "Selvaraj Iyyappan" }]
+authors     = [{ name = "Selvaraj Iyyappan", email = "selvaraj1662003@gmail.com" }]
 
 keywords = [
     "backup", "database backup", "postgresql backup", "mysql backup",
@@ -89,7 +89,7 @@ line-length = 100
 testpaths = ["tests"]
 
 [tool.bumpversion]
-current_version = "2.0.0"
+current_version = "2.1.0"
 commit          = true
 tag             = true
 tag_name        = "v{new_version}"

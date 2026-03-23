@@ -7,7 +7,7 @@ import sys
 
 # ─── Application ────────────────────────────────────────────────────
 APP_NAME = "pybackup-engine"
-APP_VERSION = "2.0.0"
+APP_VERSION = "2.1.0"
 
 # ─── Platform-aware base directories ────────────────────────────────
 # Windows : C:\Users\<name>\pybackup\

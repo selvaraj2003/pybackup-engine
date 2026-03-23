@@ -175,8 +175,10 @@ class PyBackupHandler(BaseHTTPRequestHandler):
         if ".." in safe.parts:
             return self._send(*error_response("Forbidden", 403))
 
-        # Resolve file
+        # Check if auth setup is needed and redirect root
         if str(safe) in ("", "."):
+            if not self.user_db.has_any_user():
+                return self._send(*redirect_response("/login.html"))
             fp = _STATIC_DIR / "index.html"
         else:
             fp = _STATIC_DIR / safe
@@ -189,6 +191,16 @@ class PyBackupHandler(BaseHTTPRequestHandler):
             return self._send(*error_response("Not found", 404))
 
         mime, _ = mimetypes.guess_type(str(fp))
+        ext = fp.suffix.lower()
+        if ext == ".html":
+            mime = "text/html; charset=utf-8"
+        elif ext == ".css":
+            mime = "text/css; charset=utf-8"
+        elif ext == ".js":
+            mime = "application/javascript; charset=utf-8"
+        elif ext == ".svg":
+            mime = "image/svg+xml"
+
         data = fp.read_bytes()
 
         # No caching for HTML (so auth redirects work immediately)
