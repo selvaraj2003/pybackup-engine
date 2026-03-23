@@ -44,7 +44,7 @@ logger = logging.getLogger("pybackup.cli")
 # ─── Main group ─────────────────────────────────────────────────────
 
 @click.group()
-@click.version_option("2.0.0", prog_name="pybackup")
+@click.version_option("2.1.0", prog_name="pybackup")
 def main() -> None:
     """PyBackup — production-ready backup engine with web UI.
 
